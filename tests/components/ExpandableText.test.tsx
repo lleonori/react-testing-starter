@@ -3,41 +3,37 @@ import ExpandableText from "../../src/components/ExpandableText";
 import userEvent from "@testing-library/user-event";
 
 describe("ExpandableText component", () => {
+  const shortText = "Short text";
+  const longText = "a".repeat(256);
+  const truncatedText = longText.substring(0, 255) + "...";
+
   it("it should render text without abbr", () => {
-    const text =
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum?";
-    render(<ExpandableText text={text} />);
+    render(<ExpandableText text={shortText} />);
 
     const article = screen.getByRole("article");
-
-    expect(article).toBeInTheDocument();
-    expect(article.textContent.length).toBeLessThan(255);
-    expect(article).toHaveTextContent(text);
+    expect(article).toHaveTextContent(shortText);
   });
 
   it("it should render text with abbr", () => {
-    const text =
-      "Lorem ipsum dolor sit amet consectetur adipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicing elit. Cumtetur adipisicing elit. Cumtetur adipisicing elit. Cumtetur adipisicing elit. Cumtetur adipisicing elit. Cum?";
-    render(<ExpandableText text={text} />);
+    render(<ExpandableText text={longText} />);
 
     const article = screen.getByRole("article");
+    expect(article).toHaveTextContent(truncatedText);
 
-    expect(article).toBeInTheDocument();
-    expect(article.textContent.length).toBeGreaterThan(255);
-    expect(article).toHaveTextContent("...");
+    const button = screen.getByRole("button");
+    expect(button).toHaveTextContent(/more/i);
   });
 
   it("it should render text without abbr if click button Show More", async () => {
-    const text =
-      "Lorem ipsum dolor sit amet consectetur adipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicingadipisicing elit. Cumtetur adipisicing elit. Cumtetur adipisicing elit. Cumtetur adipisicing elit. Cumtetur adipisicing elit. Cum?";
-    render(<ExpandableText text={text} />);
+    render(<ExpandableText text={longText} />);
 
     const article = screen.getByRole("article");
-    const button = screen.getByRole("button");
 
+    const button = screen.getByRole("button");
     const user = userEvent.setup();
     await user.click(button);
 
-    expect(article).not.toHaveTextContent("...");
+    expect(article).not.toHaveTextContent(truncatedText);
+    expect(button).toHaveTextContent(/less/i);
   });
 });
